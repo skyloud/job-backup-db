@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+
+set -e
+. "$BAGCLI_WORKDIR/common"
+
+cli_help_deploy() {
+  echo "
+Command: postgres
+Usage: 
+  postgres <database_name>"
+  exit 1
+}
+
+[ ! -n "$1" ] && cli_help_deploy
+
+export PG_COLOR=never
+export PGDATABASE=$1
+export PGHOST=$BAGCLI_DATABASE_HOST
+export PGPORT=$BAGCLI_DATABASE_PORT
+export PGOPTIONS=$BAGCLI_DATABASE_OPTIONS
+export PGUSER=$BAGCLI_DATABASE_USER
+export PGPASSWORD=$BAGCLI_DATABASE_PASS
+
+
+cli_log "Backup database $PGDATABASE with user $PGUSER BEGIN"
+
+cli_log "ENV variables"
+env | grep "BAGCLI_*" | grep -v "PASS"
+
+cli_log "Executing pg_dump"
+pg_dump --format=c --no-owner --file=$BAGCLI_BACKUP_PATH/backup.sqlc
+
+cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
+mc rm --recursive --force --older-than $BAGCLI_RETENTION_TIME s3/$BAGCLI_BUCKET_PATH/${PGDATABASE}_*.sqlc || true
+
+cli_log "Copy of local dump to s3"
+mc cp --quiet /tmp/backup.sqlc s3/$BAGCLI_BUCKET_PATH/${PGDATABASE}_$(date +'%d_%m_%Y__%H_%M_%S').sqlc
+
+cli_log "Cleaning /tmp folder"
+rm /tmp/backup.sqlc
+
+cli_log "Job completed !"

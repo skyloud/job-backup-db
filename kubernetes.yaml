@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: job-backup-db-secret
+type: Opaque
+data:
+  MC_HOST_s3: dGVzdA==
+  BAGCLI_DATABASE_PASS: dGVzdA==
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: job-backup-db
+spec:
+  concurrencyPolicy: Forbid
+  schedule: "0 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  suspend: false
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - image: skyloud/job-backup-db:latest
+            args:
+              - postgres
+              - db_name
+            envFrom:
+            - secretRef:
+                name: job-backup-db-secret
+                optional: false
+            env:
+            - name: BAGCLI_RETENTION_TIME
+              value: 7d
+            - name: BAGCLI_DATABASE_HOST
+              value: postgres
+            - name: BAGCLI_DATABASE_PORT
+              value: "5432"
+            imagePullPolicy: Always
+            name: database-backup
+          tolerations: []
