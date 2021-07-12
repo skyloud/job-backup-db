@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+
+set -e
+. "$BAGCLI_WORKDIR/common"
+
+cli_help_deploy() {
+  echo "
+Command: mongodb
+Usage:
+  mongodb"
+  exit 1
+}
+
+#[ ! -n "$1" ] && cli_help_deploy
+
+export MONGODB_HOST=$BAGCLI_DATABASE_HOST
+export MONGODB_USER=$BAGCLI_DATABASE_USER
+export MONGODB_PASSWORD=$BAGCLI_DATABASE_PASS
+export MONGODB_PORT=$BAGCLI_DATABASE_PORT
+
+cli_log "Backup mongoDB database with user $MONGODB_USER BEGIN"
+
+cli_log "ENV variables"
+env | grep "BAGCLI_*" | grep -v "PASS"
+
+cli_log "Executing mongodump"
+mongodump --uri="mongodb://$MONGODB_USER:$MONGODB_PASSWORD@$MONGODB_HOST:$MONGODB_PORT/?authSource=admin" --gzip --archive=/tmp/mongodump.gz
+
+cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
+mc rm --recursive --force --older-than $BAGCLI_RETENTION_TIME s3/$BAGCLI_BUCKET_PATH/mongodump_*.gz || true
+
+cli_log "Copy of local dump to s3"
+mc cp --quiet /tmp/mongodump.gz s3/$BAGCLI_BUCKET_PATH/mongodump_$(date +'%d_%m_%Y__%H_%M_%S').gz
+
+cli_log "Cleaning /tmp folder"
+rm -rf /tmp/mongodump.gz
+
+cli_log "Job completed !"
