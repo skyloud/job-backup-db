@@ -1,4 +1,4 @@
-FROM alpine:3.9.6
+FROM alpine:3.14
 
 ENV BAGCLI_RETENTION_TIME=7d
 ENV BAGCLI_BUCKET_PATH=backup
@@ -8,7 +8,7 @@ ENV BAGCLI_DATABASE_OPTIONS="-c work_mem=100MB"
 
 WORKDIR /backup-cli
 
-RUN apk add --no-cache --update postgresql-client
+RUN apk add --no-cache --update postgresql-client mariadb-client mongodb-tools
 
 COPY --from=minio/mc /usr/bin/mc /usr/bin/mc
 

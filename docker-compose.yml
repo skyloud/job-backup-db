@@ -1,0 +1,111 @@
+# Only for local tests
+version: "3.9"
+
+x-backup-base: &backup_defaults
+  build: .
+  networks:
+    - lab
+
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    networks:
+      - lab
+    command: server /data --console-address ":9090"
+    ports: 
+      - 9000:9000 #API
+      - 9090:9090 #Console
+    environment:
+      MINIO_ROOT_USER: "AKIAIOSFODNN7EXAMPLE"
+      MINIO_ROOT_PASSWORD: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    volumes:
+      - minio:/data
+      - /etc/localtime:/etc/localtime:ro
+
+  mongodb:
+    image : mongo:4.4.6
+    networks:
+      - lab
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+      MONGO_INITDB_DATABASE: mongodb_d_test
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    # ports:
+    #   - 27017:27017
+  mongodb-backup:
+    <<: *backup_defaults
+    command: ["mongodb"]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - minio
+      - mongodb
+    environment:
+      MC_HOST_s3: "http://AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY@minio:9000"
+      BAGCLI_DATABASE_USER: mongoadmin
+      BAGCLI_DATABASE_PASS: secret
+      BAGCLI_DATABASE_HOST: mongodb
+      BAGCLI_DATABASE_PORT: 27017
+
+# docker compose exec mongodb mongodump --uri="mongodb://mongoadmin:secret@localhost:27017/?authSource=admin"
+
+  mariadb:
+    image: mariadb:latest
+    networks:
+      - lab
+    environment:
+      MARIADB_ROOT_PASSWORD: root_password
+      MARIADB_DATABASE: mariadb_d_test
+      MARIADB_USER: mariadb_u_test
+      MARIADB_PASSWORD: mariadb_p_test
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  mariadb-backup:
+    <<: *backup_defaults
+    command: ["mariadb", "mariadb_d_test"]
+    depends_on:
+      - mariadb
+      - minio
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      MC_HOST_s3: "http://AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY@minio:9000"
+      BAGCLI_DATABASE_USER: root
+      BAGCLI_DATABASE_PASS: root_password
+      BAGCLI_DATABASE_HOST: mariadb
+      BAGCLI_DATABASE_PORT: 3306
+      
+  postgres:
+    image: postgres:11
+    networks:
+      - lab
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      POSTGRES_USER: postgres_u_test
+      POSTGRES_PASSWORD: postgres_p_test
+      POSTGRES_DB: postgres_d_test
+
+  postgres-backup:
+    <<: *backup_defaults
+    command: ["postgres", "postgres_d_test"]
+    depends_on:
+      - mariadb
+      - minio
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      MC_HOST_s3: "http://AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY@minio:9000"
+      BAGCLI_DATABASE_USER: postgres_u_test
+      BAGCLI_DATABASE_PASS: postgres_p_test
+      BAGCLI_DATABASE_HOST: postgres
+
+volumes:
+  minio:
+    name: minio
+networks:
+  lab:
