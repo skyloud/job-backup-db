@@ -149,7 +149,7 @@ Configure your policy on minio :
 mc admin policy add s3 project-prod-mariadb-policy s3-mariadb-prod-policy.json
 mc admin user add s3 project-prod-mariadb-user my_very_strong_key_uuid_v4
 mc admin policy set s3 project-prod-mariadb-policy user=project-prod-mariadb-user
-
+```
 
 # How to use
 
