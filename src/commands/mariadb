@@ -36,10 +36,10 @@ mysqldump \
   $MARIADB_DATABASE | gzip -9 -c > /tmp/backup.sql.gz
 
 cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
-mc rm --recursive --force --older-than $BAGCLI_RETENTION_TIME s3/$BAGCLI_BUCKET_PATH/mysql.${MARIADB_DATABASE}_*.sql.gz || true
+mc rm --recursive --force --older-than $BAGCLI_RETENTION_TIME s3/$BAGCLI_BUCKET_PATH/mariadb.${MARIADB_DATABASE}_*.sql.gz || true
 
 cli_log "Copy of local dump to s3"
-mc cp --quiet /tmp/backup.sql.gz s3/$BAGCLI_BUCKET_PATH/mysql.${MARIADB_DATABASE}_$(date +'%d_%m_%Y__%H_%M_%S').sql.gz
+mc cp --quiet /tmp/backup.sql.gz s3/$BAGCLI_BUCKET_PATH/mariadb.${MARIADB_DATABASE}_$(date +'%d_%m_%Y__%H_%M_%S').sql.gz
 
 cli_log "Cleaning /tmp folder"
 rm /tmp/backup.sql.gz
