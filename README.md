@@ -105,6 +105,7 @@ Configure your policy on minio :
 mc admin policy add s3 project-prod-mongodb-policy s3-mongodb-prod-policy.json
 mc admin user add s3 project-prod-mongodb-user my_very_strong_key_uuid_v4
 mc admin policy set s3 project-prod-mongodb-policy user=project-prod-mongodb-user
+```
 
 ## MariaDB
 
@@ -193,6 +194,7 @@ docker run --rm -it \
 ```
 ## With Docker-compose
 
+WIP
 ## With kubernetes
 
 # PostgreSQL
@@ -224,7 +226,7 @@ Enjoy !
 # Changelog
 
 | Version         |    Author     | Comment
-| ------------ | :-----------: |
+| ------------ | :-----------: | :-----------: |
 | 0.1.3 |    Quentin DUPUY (@qdupuy)     | add the word "mysql" in the archive name to distinguish the SQL service
 | 0.1.2 |    Etienne (@liogate) & Quentin DUPUY (@qdupuy)     | mariadb integration
 | 0.1.1 |    Quentin DUPUY (@qdupuy)     | mongodb integration
