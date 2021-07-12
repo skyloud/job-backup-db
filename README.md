@@ -211,12 +211,12 @@ kubectl apply -f kubernetes.yaml
 kubectl apply -f kubernetes_mongodb.yaml
 ```
 
-# MySQL
+# MariaDB
 
-> **Note :** Please update the file `kubernetes_mysql.yaml` with your own values.
+> **Note :** Please update the file `kubernetes_mariadb.yaml` with your own values.
 
 ```bash
-kubectl apply -f kubernetes_mysql.yaml
+kubectl apply -f kubernetes_mariadb.yaml
 ```
 
 Enjoy !
@@ -225,5 +225,6 @@ Enjoy !
 
 | Version         |    Author     | Comment
 | ------------ | :-----------: |
+| 0.1.3 |    Quentin DUPUY (@qdupuy)     | add the word "mysql" in the archive name to distinguish the SQL service
 | 0.1.2 |    Etienne (@liogate) & Quentin DUPUY (@qdupuy)     | mariadb integration
 | 0.1.1 |    Quentin DUPUY (@qdupuy)     | mongodb integration
