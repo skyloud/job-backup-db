@@ -227,6 +227,7 @@ Enjoy !
 
 | Version         |    Author     | Comment
 | ------------ | :-----------: | :-----------: |
+| 0.1.4 |    Quentin DUPUY (@qdupuy)     | fix typo
 | 0.1.3 |    Quentin DUPUY (@qdupuy)     | add the word "mysql" in the archive name to distinguish the SQL service
 | 0.1.2 |    Etienne (@liogate) & Quentin DUPUY (@qdupuy)     | mariadb integration
 | 0.1.1 |    Quentin DUPUY (@qdupuy)     | mongodb integration
