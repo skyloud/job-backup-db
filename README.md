@@ -171,11 +171,7 @@ docker run --rm -it \
 
 ```bash
 docker run --rm -it \
-  -e BAGCLI_MONGODB_HOST="mongodb.namespace.svc.cluster.local" \
-  -e BAGCLI_MONGODB_PORT="27017" \
-  -e BAGCLI_DATABASE_USER="mongo" \
-  -e BAGCLI_DATABASE_PASS="mongo" \
-  -e BAGCLI_DATABASE_NAME="mongodb_d_test" \
+  -e BAGCLI_DATABASE_URI="mongodb://mongoadmin:secret@mongodb-arbiter-0.mongodb-arbiter-headless.database:27017,mongodb-0.mongodb-headless.database:27017,mongodb-1.mongodb-headless.database:27017/mongodb_d_test?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority" \
   -e BAGCLI_BUCKET_PATH="bucket/prod/mongodb" \
   -e MC_HOST_s3="https://user:password@minio:9000" \
   skyloud/job-backup-db mongodb
@@ -228,6 +224,7 @@ Enjoy !
 
 | Version         |    Author     | Comment
 | ------------ | :-----------: | :-----------: |
+| 0.1.6 |    Quentin DUPUY (@qdupuy)     | Adding URI support on mongodb with variable 
 | 0.1.5 |    Quentin DUPUY (@qdupuy)     | Adding a variable to save a mongo database explicitly 
 | 0.1.4 |    Quentin DUPUY (@qdupuy)     | fix typo
 | 0.1.3 |    Quentin DUPUY (@qdupuy)     | add the word "mysql" in the archive name to distinguish the SQL service
