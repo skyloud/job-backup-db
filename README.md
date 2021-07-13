@@ -175,6 +175,7 @@ docker run --rm -it \
   -e BAGCLI_MONGODB_PORT="27017" \
   -e BAGCLI_DATABASE_USER="mongo" \
   -e BAGCLI_DATABASE_PASS="mongo" \
+  -e BAGCLI_DATABASE_NAME="mongodb_d_test" \
   -e BAGCLI_BUCKET_PATH="bucket/prod/mongodb" \
   -e MC_HOST_s3="https://user:password@minio:9000" \
   skyloud/job-backup-db mongodb
@@ -227,6 +228,7 @@ Enjoy !
 
 | Version         |    Author     | Comment
 | ------------ | :-----------: | :-----------: |
+| 0.1.5 |    Quentin DUPUY (@qdupuy)     | Adding a variable to save a mongo database explicitly 
 | 0.1.4 |    Quentin DUPUY (@qdupuy)     | fix typo
 | 0.1.3 |    Quentin DUPUY (@qdupuy)     | add the word "mysql" in the archive name to distinguish the SQL service
 | 0.1.2 |    Etienne (@liogate) & Quentin DUPUY (@qdupuy)     | mariadb integration
