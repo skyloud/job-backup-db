@@ -24,7 +24,7 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-          - image: skyloud/job-backup-db:latest
+          - image: skyloud/job-backup-db:0.1.6
             args:
               - postgres
               - db_name

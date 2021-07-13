@@ -24,7 +24,7 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-          - image: skyloud/job-backup-db:0.1.3
+          - image: skyloud/job-backup-db:0.1.6
             args:
               - mariadb
               - mariadb_d_test
