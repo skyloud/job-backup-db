@@ -38,6 +38,8 @@ spec:
               value: mongodb
             - name: BAGCLI_DATABASE_PORT
               value: 27017
+            - name: BAGCLI_DATABASE_NAME
+              value: test
             imagePullPolicy: Always
             name: mongodb-backup
           tolerations: []
