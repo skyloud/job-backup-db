@@ -172,6 +172,7 @@ docker run --rm -it \
 ```bash
 docker run --rm -it \
   -e BAGCLI_DATABASE_URI="mongodb://mongoadmin:secret@mongodb-arbiter-0.mongodb-arbiter-headless.database:27017,mongodb-0.mongodb-headless.database:27017,mongodb-1.mongodb-headless.database:27017/mongodb_d_test?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority" \
+  -e BAGCLI_DATABASE_NAME="mongodb_d_test" \
   -e BAGCLI_BUCKET_PATH="bucket/prod/mongodb" \
   -e MC_HOST_s3="https://user:password@minio:9000" \
   skyloud/job-backup-db mongodb
@@ -224,6 +225,7 @@ Enjoy !
 
 | Version         |    Author     | Comment
 | ------------ | :-----------: | :-----------: |
+| 0.1.7 |    Quentin DUPUY (@qdupuy)     | Adding the name of the backup in the file name for mongodb
 | 0.1.6 |    Quentin DUPUY (@qdupuy)     | Adding URI support on mongodb with variable 
 | 0.1.5 |    Quentin DUPUY (@qdupuy)     | Adding a variable to save a mongo database explicitly 
 | 0.1.4 |    Quentin DUPUY (@qdupuy)     | fix typo

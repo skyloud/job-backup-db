@@ -48,7 +48,7 @@ services:
       #BAGCLI_DATABASE_PASS: secret
       #BAGCLI_DATABASE_HOST: mongodb
       #BAGCLI_DATABASE_PORT: 27017
-      #BAGCLI_DATABASE_NAME: mongodb_d_test
+      BAGCLI_DATABASE_NAME: mongodb_d_test
       BAGCLI_DATABASE_URI: "mongodb://mongoadmin:secret@mongodb:27017/mongodb_d_test?authSource=admin&retryWrites=true&w=majority"
 
   mariadb:
