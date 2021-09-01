@@ -31,7 +31,7 @@ cli_log "Executing pg_dump"
 pg_dump --format=c --no-owner --file=$BAGCLI_BACKUP_PATH/backup.sqlc
 
 cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
-mc rm --recursive --force --older-than $BAGCLI_RETENTION_TIME s3/$BAGCLI_BUCKET_PATH/${PGDATABASE}_*.sqlc || true
+mc rm --recursive --force --older-than $BAGCLI_RETENTION_TIME s3/$BAGCLI_BUCKET_PATH/ || true
 
 cli_log "Copy of local dump to s3"
 mc cp --quiet /tmp/backup.sqlc s3/$BAGCLI_BUCKET_PATH/${PGDATABASE}_$(date +'%d_%m_%Y__%H_%M_%S').sqlc
