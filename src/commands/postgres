@@ -1,6 +1,7 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -e
+set +o pipefail
 . "$BAGCLI_WORKDIR/common"
 
 cli_help_deploy() {
@@ -11,15 +12,15 @@ Usage:
   exit 1
 }
 
-[ ! -n "$1" ] && cli_help_deploy
+[ -z "$1" ] && cli_help_deploy
 
 export PG_COLOR=never
-export PGDATABASE=$1
-export PGHOST=$BAGCLI_DATABASE_HOST
-export PGPORT=$BAGCLI_DATABASE_PORT
-export PGOPTIONS=$BAGCLI_DATABASE_OPTIONS
-export PGUSER=$BAGCLI_DATABASE_USER
-export PGPASSWORD=$BAGCLI_DATABASE_PASS
+export PGDATABASE="$1"
+export PGHOST="$BAGCLI_DATABASE_HOST"
+export PGPORT="$BAGCLI_DATABASE_PORT"
+export PGOPTIONS="$BAGCLI_DATABASE_OPTIONS"
+export PGUSER="$BAGCLI_DATABASE_USER"
+export PGPASSWORD="$BAGCLI_DATABASE_PASS"
 
 
 cli_log "Backup database $PGDATABASE with user $PGUSER BEGIN"
@@ -27,16 +28,45 @@ cli_log "Backup database $PGDATABASE with user $PGUSER BEGIN"
 cli_log "ENV variables"
 env | grep "BAGCLI_*" | grep -v "PASS"
 
-cli_log "Executing pg_dump"
-pg_dump --format=c --no-owner --file=$BAGCLI_BACKUP_PATH/backup.sqlc
+postgresDump() {
+  cli_log "Executing pg_dump"
+  pg_dump --format=c --no-owner --file="$BAGCLI_BACKUP_PATH"/backup.sqlc
+  return "${PIPESTATUS[0]}"
+}
 
-cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
-mc rm --recursive --force --older-than $BAGCLI_RETENTION_TIME s3/$BAGCLI_BUCKET_PATH/ || true
+removeOldBackup() {
+  cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
+  mc rm --recursive --force --older-than "$BAGCLI_RETENTION_TIME" s3/"$BAGCLI_BUCKET_PATH"/ || true
+}
 
-cli_log "Copy of local dump to s3"
-mc cp --quiet /tmp/backup.sqlc s3/$BAGCLI_BUCKET_PATH/${PGDATABASE}_$(date +'%d_%m_%Y__%H_%M_%S').sqlc
+copyToS3() {
+  cli_log "Copy of local dump to s3"
+  mc cp --quiet /tmp/backup.sqlc s3/"$BAGCLI_BUCKET_PATH"/"${PGDATABASE}"_"$(date +'%d_%m_%Y__%H_%M_%S')".sqlc
+  return "${PIPESTATUS[0]}"
+}
 
-cli_log "Cleaning /tmp folder"
-rm /tmp/backup.sqlc
+clearTmpFolder() {
+  cli_log "Cleaning /tmp folder"
+  rm /tmp/backup.sqlc
+}
 
-cli_log "Job completed !"
+checkSucceed() {
+  if [ $? -gt 0 ]; then
+    cli_log "[KO] $?"
+    exit "$1"
+  fi
+} 
+
+postgresDump
+checkSucceed "mysqldump failed"
+
+removeOldBackup
+checkSucceed "removing old backups failed"
+
+copyToS3
+checkSucceed "copying to the s3 bucket failed"
+
+clearTmpFolder
+checkSucceed "cleaning temporary folder failed"
+
+cli_log "job succeed"

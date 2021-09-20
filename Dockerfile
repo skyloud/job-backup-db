@@ -10,7 +10,7 @@ ENV BAGCLI_DATABASE_URI=mongodb://mongoadmin:secret@mongodb-arbiter-0.mongodb-ar
 
 WORKDIR /backup-cli
 
-RUN apk add --no-cache --update postgresql-client mariadb-client mongodb-tools
+RUN apk add --no-cache --update bash postgresql-client mariadb-client mongodb-tools bash
 
 COPY --from=minio/mc /usr/bin/mc /usr/bin/mc
 

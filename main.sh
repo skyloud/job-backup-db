@@ -24,13 +24,13 @@ export $(cat "$BAGCLI_WORKDIR/config" | xargs)
 
 case "$1" in
   postgres|p)
-    "$BAGCLI_WORKDIR/commands/postgres" "$2" | tee -ia "$BAGCLI_WORKDIR/postgres_${2}.log"
+    "$BAGCLI_WORKDIR/commands/postgres" "$2"
     ;;
   mariadb|m)
-    "$BAGCLI_WORKDIR/commands/mariadb" "$2" | tee -ia "$BAGCLI_WORKDIR/mariadb_${2}.log"
+    "$BAGCLI_WORKDIR/commands/mariadb" "$2"
     ;;
   mongodb|mongo)
-    "$BAGCLI_WORKDIR/commands/mongodb" | tee -ia "$BAGCLI_WORKDIR/mongodb_${2}.log"
+    "$BAGCLI_WORKDIR/commands/mongodb"
     ;;
   *)
     cli_help

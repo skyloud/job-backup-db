@@ -1,6 +1,7 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -e
+set +o pipefail
 . "$BAGCLI_WORKDIR/common"
 
 cli_help_deploy() {
@@ -11,37 +12,65 @@ Usage:
   exit 1
 }
 
-[ ! -n "$1" ] && cli_help_deploy
+[ -z "$1" ] && cli_help_deploy
 
-export MARIADB_DATABASE=$1
-export MARIADB_HOST=$BAGCLI_DATABASE_HOST
-export MARIADB_USER=$BAGCLI_DATABASE_USER
-export MARIADB_TCP_PORT=$BAGCLI_DATABASE_PORT
-export MARIADB_PWD=$BAGCLI_DATABASE_PASS
+export MARIADB_DATABASE="$1"
+export MARIADB_HOST="$BAGCLI_DATABASE_HOST"
+export MARIADB_USER="$BAGCLI_DATABASE_USER"
+export MARIADB_TCP_PORT="$BAGCLI_DATABASE_PORT"
+export MARIADB_PWD="$BAGCLI_DATABASE_PASS"
 
 cli_log "Backup database $MARIADB_DATABASE with user $MARIADB_USER BEGIN"
 
 cli_log "ENV variables"
 env | grep "BAGCLI_*" | grep -v "PASS"
 
-cli_log "Executing mysqldump"
+mysqlDump() {
+  cli_log "Executing mysqldump"
+  mysqldump \
+    --default-character-set=utf8mb4 \
+    --host "$MARIADB_HOST" \
+    --user "$MARIADB_USER" \
+    --port "$MARIADB_TCP_PORT" \
+    -p"$MARIADB_PWD" \
+    --single-transaction \
+    "$MARIADB_DATABASE" | gzip -9 -c > /tmp/backup.sql.gz
+  return "${PIPESTATUS[0]}"
+}
 
-mysqldump \
-  --default-character-set=utf8mb4 \
-  --host $MARIADB_HOST \
-  --user $MARIADB_USER \
-  --port $MARIADB_TCP_PORT \
-  -p"$MARIADB_PWD" \
-  --single-transaction \
-  $MARIADB_DATABASE | gzip -9 -c > /tmp/backup.sql.gz
+removeOldBackup() {
+  cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
+  mc rm --recursive --force --older-than "$BAGCLI_RETENTION_TIME" s3/"$BAGCLI_BUCKET_PATH"/ || true
+}
 
-cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
-mc rm --recursive --force --older-than $BAGCLI_RETENTION_TIME s3/$BAGCLI_BUCKET_PATH/ || true
+copyToS3() {
+  cli_log "Copy of local dump to s3"
+  mc cp --quiet /tmp/backup.sql.gz s3/"$BAGCLI_BUCKET_PATH"/mariadb."${MARIADB_DATABASE}"_"$(date +'%d_%m_%Y__%H_%M_%S')".sql.gz
+  return "${PIPESTATUS[0]}"
+}
 
-cli_log "Copy of local dump to s3"
-mc cp --quiet /tmp/backup.sql.gz s3/$BAGCLI_BUCKET_PATH/mariadb.${MARIADB_DATABASE}_$(date +'%d_%m_%Y__%H_%M_%S').sql.gz
+clearTmpFolder() {
+  cli_log "Cleaning tmp folder"
+  rm -rf /tmp/backup.sql.gz
+}
 
-cli_log "Cleaning /tmp folder"
-rm /tmp/backup.sql.gz
+checkSucceed() {
+  if [ $? -gt 0 ]; then
+    cli_log "[KO] $?"
+    exit "$1"
+  fi
+} 
 
-cli_log "Job completed !"
+mysqlDump
+checkSucceed "mysqldump failed"
+
+removeOldBackup
+checkSucceed "removing old backups failed"
+
+copyToS3
+checkSucceed "copying to the s3 bucket failed"
+
+clearTmpFolder
+checkSucceed "cleaning temporary folder failed"
+
+cli_log "job succeed"

@@ -1,6 +1,7 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -e
+set +o pipefail
 . "$BAGCLI_WORKDIR/common"
 
 cli_help_deploy() {
@@ -10,8 +11,6 @@ Usage:
   mongodb"
   exit 1
 }
-
-#[ ! -n "$1" ] && cli_help_deploy
 
 export MONGODB_HOST=$BAGCLI_DATABASE_HOST
 export MONGODB_USER=$BAGCLI_DATABASE_USER
@@ -25,16 +24,45 @@ cli_log "Backup mongoDB database with user $MONGODB_USER BEGIN"
 cli_log "ENV variables"
 env | grep "BAGCLI_*" | grep -v "PASS"
 
-cli_log "Executing mongodump"
-mongodump --uri="$MONGODB_URI" --gzip --archive=/tmp/mongodump.gz
+mongoDump() {
+  cli_log "Executing mongodump"
+  mongodump --uri="$MONGODB_URI" --gzip --archive=/tmp/mongodump.gz
+  return "${PIPESTATUS[0]}"
+}
 
-cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
-mc rm --recursive --force --older-than $BAGCLI_RETENTION_TIME s3/$BAGCLI_BUCKET_PATH/ || true
+removeOldBackup() {
+  cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
+  mc rm --recursive --force --older-than "$BAGCLI_RETENTION_TIME" s3/"$BAGCLI_BUCKET_PATH"/ || true
+}
 
-cli_log "Copy of local dump to s3"
-mc cp --quiet /tmp/mongodump.gz s3/$BAGCLI_BUCKET_PATH/mongodump_${BAGCLI_DATABASE_NAME}_$(date +'%d_%m_%Y__%H_%M_%S').gz
+copyToS3() {
+  cli_log "Copy of local dump to s3"
+  mc cp --quiet /tmp/mongodump.gz s3/"$BAGCLI_BUCKET_PATH"/mongodump_"${BAGCLI_DATABASE_NAME}"_"$(date +'%d_%m_%Y__%H_%M_%S')".gz
+  return "${PIPESTATUS[0]}"
+}
 
-cli_log "Cleaning /tmp folder"
-rm -rf /tmp/mongodump.gz
+clearTmpFolder() {
+  cli_log "Cleaning /tmp folder"
+  rm -rf /tmp/mongodump.gz
+}
 
-cli_log "Job completed !"
+checkSucceed() {
+  if [ $? -gt 0 ]; then
+    cli_log "[KO] $?"
+    exit "$1"
+  fi
+}
+
+mongoDump
+checkSucceed "mysqldump failed"
+
+removeOldBackup
+checkSucceed "removing old backups failed"
+
+copyToS3
+checkSucceed "copying to the s3 bucket failed"
+
+clearTmpFolder
+checkSucceed "cleaning temporary folder failed"
+
+cli_log "job succeed"
