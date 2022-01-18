@@ -5,3 +5,10 @@ cli_log() {
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   echo "== $script_name $timestamp $1"
 }
+
+heartbeatPing() {
+  if [ -z "$BAGCLI_HEARTBEAT_URL" ]; then
+    return
+  fi
+  curl -v -XGET $BAGCLI_HEARTBEAT_URL
+}
