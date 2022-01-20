@@ -11,7 +11,7 @@ ENV BAGCLI_HEARTBEAT_URL=""
 
 WORKDIR /backup-cli
 
-RUN apk add --no-cache --update postgresql-client mariadb-client mongodb-tools bash
+RUN apk add --no-cache --update postgresql-client mariadb-client mongodb-tools bash curl
 
 COPY --from=minio/mc /usr/bin/mc /usr/bin/mc
 
