@@ -73,4 +73,5 @@ checkSucceed "copying to the s3 bucket failed"
 clearTmpFolder
 checkSucceed "cleaning temporary folder failed"
 
+heartbeatPing
 cli_log "job succeed"
