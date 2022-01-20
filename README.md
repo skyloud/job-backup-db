@@ -17,7 +17,7 @@ Image : `skyloud/job-backup-db` available on [docker hub](https://hub.docker.com
 
 You can help us to contribute on our repos 🚀
 
-## Heartbeat
+## Other settings
 
 How to follow backup jobs to be done with a heartbeat system. Use `BAGCLI_HEARTBEAT_URL` that will make a GET curl request at the end of job when succeed. Job will fail if request fail too.
 
