@@ -196,7 +196,7 @@ docker run --rm -it \
 ```
 ## With Docker-compose
 
-WIP
+`` docker-compose build --nocache && docker-compose up -d``
 ## With kubernetes
 
 # PostgreSQL

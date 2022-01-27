@@ -23,7 +23,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
 
   mongodb:
-    image : mongo:4.4.6
+    image : mongo:latest
     networks:
       - lab
     environment:
@@ -79,7 +79,7 @@ services:
       BAGCLI_DATABASE_PORT: 3306
       
   postgres:
-    image: postgres:11
+    image: postgres:latest
     networks:
       - lab
     volumes:
@@ -93,7 +93,7 @@ services:
     <<: *backup_defaults
     command: ["postgres", "postgres_d_test"]
     depends_on:
-      - mariadb
+      - postgres
       - minio
     volumes:
       - /etc/localtime:/etc/localtime:ro
