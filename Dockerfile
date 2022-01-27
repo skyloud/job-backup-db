@@ -13,18 +13,18 @@ WORKDIR /backup-cli
 
 RUN apk add --no-cache --update postgresql-client mariadb-client mongodb-tools bash curl
 
-RUN addgroup -S job; \
-    adduser --uid 1010 -G job --home /home/job -S --shell /bin/bash job
+RUN addgroup -S job \
+    && adduser --uid 1010 -G job --home /home/job -S --shell /bin/bash job
 
 COPY --from=minio/mc /usr/bin/mc /usr/bin/mc
 
 COPY main.sh /usr/bin/backup
 COPY src/ ./
 
-RUN chmod +x /usr/bin/backup; \
-    chmod +x -R ./commands; \
-    chown -R job /usr/bin/backup; \
-    chown -R job ./commands
+RUN chmod +x /usr/bin/backup \
+    && chmod +x -R ./commands \
+    && chown -R job /usr/bin/backup \
+    && chown -R job ./commands
 
 USER job
 
