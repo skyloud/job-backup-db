@@ -1,5 +1,6 @@
 | Version |                    Author                    |                                                                   Comment                                                                   |
 | ------- | :------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------: |
+| 0.1.11   |              Quentin DUPUY (@qdupuy)              |                                                     no-root container as well as the update of the alpine image                                                     |
 | 0.1.10   |              Etienne (@liogate)              |                                                     Add heartbeat url for job tracking.                                                     |
 | 0.1.9   |           Quentin DUPUY (@qdupuy)            | Creation of functions for each step of the script. Implementation of error feedback to avoid always having an exit 0 in case of a job error |
 | 0.1.8   |           Quentin DUPUY (@qdupuy)            |                                                   correction on the retention of backups                                                    |
