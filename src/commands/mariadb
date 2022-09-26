@@ -7,7 +7,7 @@ set +o pipefail
 cli_help_deploy() {
   echo "
 Command: mariadb
-Usage: 
+Usage:
   mariadb <database_name>"
   exit 1
 }
@@ -59,19 +59,26 @@ checkSucceed() {
     cli_log "[KO] $?"
     exit "$1"
   fi
-} 
+}
 
-mysqlDump
-checkSucceed "mysqldump failed"
+main(){
+  mysqlDump
+  checkSucceed "mysqldump failed"
 
-removeOldBackup
-checkSucceed "removing old backups failed"
+  removeOldBackup
+  checkSucceed "removing old backups failed"
 
-copyToS3
-checkSucceed "copying to the s3 bucket failed"
+  copyToS3
+  checkSucceed "copying to the s3 bucket failed"
 
-clearTmpFolder
-checkSucceed "cleaning temporary folder failed"
+  clearTmpFolder
+  checkSucceed "cleaning temporary folder failed"
 
-heartbeatPing
-cli_log "job succeed"
+  heartbeatPing
+  cli_log "job succeed"
+
+  postToWebhook
+  cli_log "post to WebHook succeed"
+}
+
+main

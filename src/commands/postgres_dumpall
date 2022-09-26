@@ -4,29 +4,22 @@ set -e
 set +o pipefail
 . "$BAGCLI_WORKDIR/common"
 
-cli_help_deploy() {
-  echo "
-Command: mongodb
-Usage:
-  mongodb"
-  exit 1
-}
+export PG_COLOR=never
+export PGHOST="$BAGCLI_DATABASE_HOST"
+export PGPORT="$BAGCLI_DATABASE_PORT"
+export PGOPTIONS="$BAGCLI_DATABASE_OPTIONS"
+export PGUSER="$BAGCLI_DATABASE_USER"
+export PGPASSWORD="$BAGCLI_DATABASE_PASS"
 
-export MONGODB_HOST=$BAGCLI_DATABASE_HOST
-export MONGODB_USER=$BAGCLI_DATABASE_USER
-export MONGODB_PASSWORD=$BAGCLI_DATABASE_PASS
-export MONGODB_PORT=$BAGCLI_DATABASE_PORT
-export MONGODB_DB=$BAGCLI_DATABASE_NAME
-export MONGODB_URI=$BAGCLI_DATABASE_URI
 
-cli_log "Backup mongoDB database with user $MONGODB_USER BEGIN"
+cli_log "Backup all databases with user $PGUSER BEGIN"
 
 cli_log "ENV variables"
 env | grep "BAGCLI_*" | grep -v "PASS"
 
-mongoDump() {
-  cli_log "Executing mongodump"
-  mongodump --uri="$MONGODB_URI" --gzip --archive=/tmp/mongodump.gz
+postgresDump() {
+  cli_log "Executing pg_dump"
+  pg_dumpall --file="$BAGCLI_BACKUP_PATH"/backup.dump
   return "${PIPESTATUS[0]}"
 }
 
@@ -37,13 +30,13 @@ removeOldBackup() {
 
 copyToS3() {
   cli_log "Copy of local dump to s3"
-  mc cp --quiet /tmp/mongodump.gz s3/"$BAGCLI_BUCKET_PATH"/mongodump_"${BAGCLI_DATABASE_NAME}"_"$(date +'%d_%m_%Y__%H_%M_%S')".gz
+  mc cp --quiet /tmp/backup.dump s3/"$BAGCLI_BUCKET_PATH"/pg_dumpall_"$(date +'%d_%m_%Y__%H_%M_%S')".dump
   return "${PIPESTATUS[0]}"
 }
 
 clearTmpFolder() {
   cli_log "Cleaning /tmp folder"
-  rm -rf /tmp/mongodump.gz
+  rm /tmp/backup.dump
 }
 
 checkSucceed() {
@@ -54,7 +47,7 @@ checkSucceed() {
 }
 
 main(){
-  mongoDump
+  postgresDump
   checkSucceed "mysqldump failed"
 
   removeOldBackup
