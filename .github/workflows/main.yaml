@@ -3,6 +3,9 @@ name: ci
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - '*'
 
 env:
   IMAGE_TAG: ${{ github.event.release.tag_name || github.sha }}
