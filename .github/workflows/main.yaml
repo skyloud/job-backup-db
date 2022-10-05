@@ -39,22 +39,10 @@ jobs:
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
       -
-        name: Update repo description
-        env:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME}}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
           repository: ${{ secrets.DOCKER_HUB_USERNAME }}/job-backup-db
-        run: |
-         code=$(jq -n --arg msg "$(<README.md)" \
-           '{"registry":"registry-1.docker.io","full_description": $msg }' | \
-               curl -s -o /dev/null  -L -w "%{http_code}" \
-                  https://cloud.docker.com/v2/repositories/"${repository}"/ \
-                  -d @- -X PATCH \
-                  -H "Content-Type: application/json" \
-                  -H "Authorization: JWT ${password}")
-         if [[ "${code}" = "200" ]]; then
-           printf "Successfully pushed README to Docker Hub"
-         else
-           printf "Unable to push README to Docker Hub, response code: %s\n" "${code}"
-           exit 1
-         fi
+          readme-filepath: ./README.md
