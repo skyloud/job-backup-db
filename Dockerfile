@@ -1,4 +1,4 @@
-FROM alpine:3.15.0
+FROM alpine:3.16.2
 
 ENV BAGCLI_RETENTION_TIME=7d
 ENV BAGCLI_BUCKET_PATH=backup
@@ -8,6 +8,8 @@ ENV BAGCLI_DATABASE_OPTIONS="-c work_mem=100MB"
 ENV BAGCLI_DATABASE_NAME=test
 ENV BAGCLI_DATABASE_URI=mongodb://mongoadmin:secret@mongodb-arbiter-0.mongodb-arbiter-headless.database:27017,mongodb-0.mongodb-headless.database:27017,mongodb-1.mongodb-headless.database:27017/mongodb_d_test?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority
 ENV BAGCLI_HEARTBEAT_URL=""
+ENV BAGCLI_WEBHOOK_URL=""
+ENV BAGCLI_WEBHOOK_CHANNEL=""
 
 WORKDIR /backup-cli
 

@@ -12,7 +12,7 @@ services:
     networks:
       - lab
     command: server /data --console-address ":9090"
-    ports: 
+    ports:
       - 9000:9000 #API
       - 9090:9090 #Console
     environment:
@@ -50,6 +50,8 @@ services:
       #BAGCLI_DATABASE_PORT: 27017
       BAGCLI_DATABASE_NAME: mongodb_d_test
       BAGCLI_DATABASE_URI: "mongodb://mongoadmin:secret@mongodb:27017/mongodb_d_test?authSource=admin&retryWrites=true&w=majority"
+      BAGCLI_WEBHOOK_URL: X
+      BAGCLI_WEBHOOK_CHANNEL: "#X"
 
   mariadb:
     image: mariadb:latest
@@ -77,7 +79,9 @@ services:
       BAGCLI_DATABASE_PASS: root_password
       BAGCLI_DATABASE_HOST: mariadb
       BAGCLI_DATABASE_PORT: 3306
-      
+      BAGCLI_WEBHOOK_URL: X
+      BAGCLI_WEBHOOK_CHANNEL: "#X"
+
   postgres:
     image: postgres:latest
     networks:
@@ -102,6 +106,24 @@ services:
       BAGCLI_DATABASE_USER: postgres_u_test
       BAGCLI_DATABASE_PASS: postgres_p_test
       BAGCLI_DATABASE_HOST: postgres
+      BAGCLI_WEBHOOK_URL: X
+      BAGCLI_WEBHOOK_CHANNEL: "#X"
+
+  postgres-dump-all-backup:
+    <<: *backup_defaults
+    command: ["postgres_dumpall"]
+    depends_on:
+      - postgres
+      - minio
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      MC_HOST_s3: "http://AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY@minio:9000"
+      BAGCLI_DATABASE_USER: postgres_u_test
+      BAGCLI_DATABASE_PASS: postgres_p_test
+      BAGCLI_DATABASE_HOST: postgres
+      BAGCLI_WEBHOOK_URL: X
+      BAGCLI_WEBHOOK_CHANNEL: "#X"
 
 volumes:
   minio:

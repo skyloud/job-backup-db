@@ -7,7 +7,7 @@ set +o pipefail
 cli_help_deploy() {
   echo "
 Command: postgres
-Usage: 
+Usage:
   postgres <database_name>"
   exit 1
 }
@@ -30,7 +30,7 @@ env | grep "BAGCLI_*" | grep -v "PASS"
 
 postgresDump() {
   cli_log "Executing pg_dump"
-  pg_dump --format=c --no-owner --file="$BAGCLI_BACKUP_PATH"/backup.sqlc
+  pg_dump --format=c --no-owner --file="$BAGCLI_BACKUP_PATH"/backup.sqlc.dump
   return "${PIPESTATUS[0]}"
 }
 
@@ -41,13 +41,13 @@ removeOldBackup() {
 
 copyToS3() {
   cli_log "Copy of local dump to s3"
-  mc cp --quiet /tmp/backup.sqlc s3/"$BAGCLI_BUCKET_PATH"/"${PGDATABASE}"_"$(date +'%d_%m_%Y__%H_%M_%S')".sqlc
+  mc cp --quiet /tmp/backup.sqlc.dump s3/"$BAGCLI_BUCKET_PATH"/"${PGDATABASE}"_"$(date +'%d_%m_%Y__%H_%M_%S')".sqlc.dump
   return "${PIPESTATUS[0]}"
 }
 
 clearTmpFolder() {
   cli_log "Cleaning /tmp folder"
-  rm /tmp/backup.sqlc
+  rm /tmp/backup.sqlc.dump
 }
 
 checkSucceed() {
@@ -55,19 +55,26 @@ checkSucceed() {
     cli_log "[KO] $?"
     exit "$1"
   fi
-} 
+}
 
-postgresDump
-checkSucceed "mysqldump failed"
+main(){
+  postgresDump
+  checkSucceed "mysqldump failed"
 
-removeOldBackup
-checkSucceed "removing old backups failed"
+  removeOldBackup
+  checkSucceed "removing old backups failed"
 
-copyToS3
-checkSucceed "copying to the s3 bucket failed"
+  copyToS3
+  checkSucceed "copying to the s3 bucket failed"
 
-clearTmpFolder
-checkSucceed "cleaning temporary folder failed"
+  clearTmpFolder
+  checkSucceed "cleaning temporary folder failed"
 
-heartbeatPing
-cli_log "job succeed"
+  heartbeatPing
+  cli_log "job succeed"
+
+  postToWebhook
+  cli_log "post to WebHook succeed"
+}
+
+main

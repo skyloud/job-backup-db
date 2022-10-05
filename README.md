@@ -22,7 +22,7 @@ You can help us to contribute on our repos 🚀
 How to follow backup jobs to be done with a heartbeat system. Use `BAGCLI_HEARTBEAT_URL` that will make a GET curl request at the end of job when succeed. Job will fail if request fail too.
 
 ## Postgres
-# Configure S3 
+# Configure S3
 
 You'll need to setup a policy for a newly created user which will be used for this backup.
 
@@ -169,6 +169,8 @@ docker run --rm -it \
   -e BAGCLI_DATABASE_PASS="db_password" \
   -e BAGCLI_BUCKET_PATH="bucket/prod/postgres" \
   -e MC_HOST_s3="https://user:password@minio:9000" \
+  -e BAGCLI_WEBHOOK_URL=url \
+  -e BAGCLI_WEBHOOK_CHANNEL: "#channel" \
   skyloud/job-backup-db postgres database-name
 ```
 ### MongoDB case
@@ -179,6 +181,8 @@ docker run --rm -it \
   -e BAGCLI_DATABASE_NAME="mongodb_d_test" \
   -e BAGCLI_BUCKET_PATH="bucket/prod/mongodb" \
   -e MC_HOST_s3="https://user:password@minio:9000" \
+  -e BAGCLI_WEBHOOK_URL=url \
+  -e BAGCLI_WEBHOOK_CHANNEL: "#channel" \
   skyloud/job-backup-db mongodb
 ```
 
@@ -192,6 +196,8 @@ docker run --rm -it \
   -e BAGCLI_DATABASE_PASS="test" \
   -e BAGCLI_BUCKET_PATH="bucket/prod/mariadb" \
   -e MC_HOST_s3="https://user:password@minio:9000" \
+  -e BAGCLI_WEBHOOK_URL=url \
+  -e BAGCLI_WEBHOOK_CHANNEL: "#channel" \
   skyloud/job-backup-db mongodb
 ```
 ## With Docker-compose
@@ -204,7 +210,13 @@ docker run --rm -it \
 > **Note :** Please update the file `kubernetes.yaml` with your own values.
 
 ```bash
-kubectl apply -f kubernetes.yaml
+kubectl apply -f example/kubernetes_postgres.yaml
+```
+
+If you want to back up all the databases, you should take the example of this file :
+
+```bash
+kubectl apply -f example/kubernetes_postgres_dumpall.yaml
 ```
 
 # MongoDB
@@ -212,7 +224,7 @@ kubectl apply -f kubernetes.yaml
 > **Note :** Please update the file `kubernetes_mongodb.yaml` with your own values.
 
 ```bash
-kubectl apply -f kubernetes_mongodb.yaml
+kubectl apply -f example/kubernetes_mongodb.yaml
 ```
 
 # MariaDB
@@ -220,8 +232,17 @@ kubectl apply -f kubernetes_mongodb.yaml
 > **Note :** Please update the file `kubernetes_mariadb.yaml` with your own values.
 
 ```bash
-kubectl apply -f kubernetes_mariadb.yaml
+kubectl apply -f example/kubernetes_mariadb.yaml
 ```
+
+# Notification
+
+## WebHook
+
+If you want to set up a webhook call, you must define the following variables :
+
+- BAGCLI_WEBHOOK_URL --> the complete url with its token
+- BAGCLI_WEBHOOK_CHANNEL --> channel name
 
 Enjoy !
 

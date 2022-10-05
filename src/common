@@ -12,3 +12,10 @@ heartbeatPing() {
   fi
   curl -v -XGET $BAGCLI_HEARTBEAT_URL
 }
+
+postToWebhook(){
+  if [ -z "$BAGCLI_WEBHOOK_URL" ] && [ -z "$BAGCLI_WEBHOOK_CHANNEL" ]; then
+    return
+  fi
+  curl -v -X POST --data-urlencode "payload={\"channel\": \"$BAGCLI_WEBHOOK_CHANNEL\", \"username\": \"cronjob_backup_sql\", \"text\": \"cronjob succeed.\", \"icon_emoji\": \":gear:\"}" $BAGCLI_WEBHOOK_URL
+}

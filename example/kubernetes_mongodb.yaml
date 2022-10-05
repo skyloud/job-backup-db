@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: job-backup-mongodb-secret
+type: Opaque
+data:
+  MC_HOST_s3: dGVzdA==
+  BAGCLI_DATABASE_URI: dGVzdA==
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: job-backup-mongodb
+spec:
+  concurrencyPolicy: Forbid
+  schedule: "0 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  suspend: false
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - image: skyloud/job-backup-db:0.1.12
+            args:
+              - mongodb
+            envFrom:
+            - secretRef:
+                name: job-backup-mongodb-secret
+                optional: false
+            env:
+              - name: BAGCLI_RETENTION_TIME
+                value: 3d
+              - name: BAGCLI_DATABASE_URI
+                value: mongodb://root:password@mongodb.x:27017
+              - name: BAGCLI_DATABASE_PORT
+                value: "27017"
+              - name: BAGCLI_BUCKET_PATH
+                value: bucket/databases/mongodb/data
+              - name: TZ
+                value: Europe/Paris
+              - name: BAGCLI_HEARTBEAT_URL
+                value: X
+            imagePullPolicy: Always
+            name: mongodb-backup
+          tolerations: []

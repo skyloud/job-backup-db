@@ -24,7 +24,7 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-          - image: skyloud/job-backup-db:0.1.6
+          - image: skyloud/job-backup-db:0.1.12
             args:
               - mariadb
               - mariadb_d_test
@@ -33,12 +33,20 @@ spec:
                 name: job-backup-mariadb-secret
                 optional: false
             env:
-            - name: BAGCLI_RETENTION_TIME
-              value: 7d
-            - name: BAGCLI_DATABASE_HOST
-              value: mariadb
-            - name: BAGCLI_DATABASE_PORT
-              value: 3306
+              - name: BAGCLI_RETENTION_TIME
+                value: 3d
+              - name: BAGCLI_DATABASE_HOST
+                value: host
+              - name: BAGCLI_DATABASE_USER
+                value: database_name
+              - name: BAGCLI_DATABASE_PORT
+                value: "3306"
+              - name: BAGCLI_BUCKET_PATH
+                value: bucket/databases/mariadb/test
+              - name: TZ
+                value: Europe/Paris
+              - name: BAGCLI_HEARTBEAT_URL
+                value: X
             imagePullPolicy: Always
             name: mariadb-backup
           tolerations: []
