@@ -1,7 +1,7 @@
-FROM alpine:3.18.0
+FROM alpine:3.19.0
 
 ENV BAGCLI_RETENTION_TIME=7d
-ENV BAGCLI_BUCKET_PATH=backup
+ENV BAGCLI_REMOTE_PATH=backup
 ENV BAGCLI_DATABASE_HOST=localhost
 ENV BAGCLI_DATABASE_PORT=5432
 ENV BAGCLI_DATABASE_OPTIONS="-c work_mem=100MB"
@@ -13,12 +13,10 @@ ENV BAGCLI_WEBHOOK_CHANNEL=""
 
 WORKDIR /backup-cli
 
-RUN apk add --no-cache --update postgresql-client mariadb-client mongodb-tools bash curl
+RUN apk add --no-cache --update rclone postgresql-client mariadb-client mongodb-tools bash curl
 
 RUN addgroup -S job \
     && adduser --uid 1010 -G job --home /home/job -S --shell /bin/bash job
-
-COPY --from=minio/mc /usr/bin/mc /usr/bin/mc
 
 COPY main.sh /usr/bin/backup
 COPY src/ ./

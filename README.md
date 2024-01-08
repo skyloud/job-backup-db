@@ -158,6 +158,22 @@ mc admin policy set s3 project-prod-mariadb-policy user=project-prod-mariadb-use
 
 # How to use
 
+## RClone configuration
+
+You'll need to configure rclone to access your S3 endpoint.
+
+```conf
+[backup]
+type = s3
+provider = minio
+env_auth = false
+access_key_id = my_very_strong_key_uuid_v4
+secret_access_key = my_very_strong_key_uuid_v4
+region = us-east-1
+endpoint = https://s3.project.com
+acl = private
+```
+
 ## With docker
 
 ### Postgres Case
@@ -167,10 +183,10 @@ docker run --rm -it \
   -e BAGCLI_DATABASE_HOST="postgres.namespace.svc.cluster.local" \
   -e BAGCLI_DATABASE_USER="postgres" \
   -e BAGCLI_DATABASE_PASS="db_password" \
-  -e BAGCLI_BUCKET_PATH="bucket/prod/postgres" \
-  -e MC_HOST_s3="https://user:password@minio:9000" \
+  -e BAGCLI_REMOTE_PATH="bucket/prod/postgres" \
   -e BAGCLI_WEBHOOK_URL=url \
   -e BAGCLI_WEBHOOK_CHANNEL: "#channel" \
+  -v ./rclone.conf:/home/job/.config/rclone/rclone.conf \
   skyloud/job-backup-db postgres database-name
 ```
 ### MongoDB case
@@ -179,10 +195,10 @@ docker run --rm -it \
 docker run --rm -it \
   -e BAGCLI_DATABASE_URI="mongodb://mongoadmin:secret@mongodb-arbiter-0.mongodb-arbiter-headless.database:27017,mongodb-0.mongodb-headless.database:27017,mongodb-1.mongodb-headless.database:27017/mongodb_d_test?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority" \
   -e BAGCLI_DATABASE_NAME="mongodb_d_test" \
-  -e BAGCLI_BUCKET_PATH="bucket/prod/mongodb" \
-  -e MC_HOST_s3="https://user:password@minio:9000" \
+  -e BAGCLI_REMOTE_PATH="bucket/prod/mongodb" \
   -e BAGCLI_WEBHOOK_URL=url \
   -e BAGCLI_WEBHOOK_CHANNEL: "#channel" \
+  -v ./rclone.conf:/home/job/.config/rclone/rclone.conf \
   skyloud/job-backup-db mongodb
 ```
 
@@ -194,10 +210,10 @@ docker run --rm -it \
   -e BAGCLI_MONGODB_PORT="3306" \
   -e BAGCLI_DATABASE_USER="test" \
   -e BAGCLI_DATABASE_PASS="test" \
-  -e BAGCLI_BUCKET_PATH="bucket/prod/mariadb" \
-  -e MC_HOST_s3="https://user:password@minio:9000" \
+  -e BAGCLI_REMOTE_PATH="bucket/prod/mariadb" \
   -e BAGCLI_WEBHOOK_URL=url \
   -e BAGCLI_WEBHOOK_CHANNEL: "#channel" \
+  -v ./rclone.conf:/home/job/.config/rclone/rclone.conf \
   skyloud/job-backup-db mongodb
 ```
 ## With Docker-compose

@@ -38,12 +38,22 @@ spec:
                 value: mongodb://root:password@mongodb.x:27017
               - name: BAGCLI_DATABASE_PORT
                 value: "27017"
-              - name: BAGCLI_BUCKET_PATH
+              - name: BAGCLI_REMOTE_PATH
                 value: bucket/databases/mongodb/data
               - name: TZ
                 value: Europe/Paris
               - name: BAGCLI_HEARTBEAT_URL
                 value: X
+            volumeMounts:
+            - mountPath: /home/job/.config/rclone
+              name: rclone
             imagePullPolicy: Always
-            name: mongodb-backup
+            name: database-backup
           tolerations: []
+          volumes:
+          - name: rclone
+            secret:
+              secretName: rclone-config
+              items:
+              - key: rclone.conf
+                path: rclone.conf

@@ -19,3 +19,29 @@ postToWebhook(){
   fi
   curl -v -X POST --data-urlencode "payload={\"channel\": \"$BAGCLI_WEBHOOK_CHANNEL\", \"username\": \"cronjob_backup_sql\", \"text\": \"cronjob succeed.\", \"icon_emoji\": \":gear:\"}" $BAGCLI_WEBHOOK_URL
 }
+
+rclone_config_path() {
+  if [ -z "$BAGCLI_RCLONE_CONFIG" ]; then
+    echo "$HOME/.config/rclone/rclone.conf"  
+  else
+    echo "$BAGCLI_RCLONE_CONFIG"
+  fi
+}
+
+rclone_cmd() {
+  RCLONE_CONFIG=$(rclone_config_path)
+  if [ ! -f "$RCLONE_CONFIG" ]; then
+    cli_log "rclone config file not found: $RCLONE_CONFIG"
+    exit 1
+  fi
+  rclone --config "$RCLONE_CONFIG" "$@"
+}
+
+rclone_cp() {
+  rclone_cmd copy "$@"
+}
+
+rclone_delete() {
+  rclone_cmd delete "$@"
+}
+
