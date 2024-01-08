@@ -1,5 +1,6 @@
 | Version |                    Author                    |                                                                   Comment                                                                   |
 | ------- | :------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------: |
+| 0.2.0   |          Philippe VIENNE (@PhilippeVienne)   |                       Use rclone instead of the minio client for CLI access to allow more backup scenarios           ‡                       |
 | 0.1.12   |              Quentin DUPUY (@qdupuy)              |   Alpine image update, reorganisation of the folder structure, integration of pg_dumpall and notification via webhook, integration of main function, setting up a CI/CD with GitHub action  |
 | 0.1.11   |              Quentin DUPUY (@qdupuy)              |                                                     no-root container as well as the update of the alpine image                                                     |
 | 0.1.10   |              Etienne (@liogate)              |                                                     Add heartbeat url for job tracking.                                                     |

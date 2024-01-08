@@ -36,12 +36,12 @@ postgresDump() {
 
 removeOldBackup() {
   cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
-  mc rm --recursive --force --older-than "$BAGCLI_RETENTION_TIME" s3/"$BAGCLI_BUCKET_PATH"/ || true
+  rclone_delete --min-age "$BAGCLI_RETENTION_TIME" backup:"$BAGCLI_REMOTE_PATH"/ || true
 }
 
 copyToS3() {
-  cli_log "Copy of local dump to s3"
-  mc cp --quiet /tmp/backup.sqlc.dump s3/"$BAGCLI_BUCKET_PATH"/"${PGDATABASE}"_"$(date +'%d_%m_%Y__%H_%M_%S')".sqlc.dump
+  cli_log "Copy of local dump to remote"
+  rclone_cp /tmp/backup.sqlc.dump backup:"$BAGCLI_REMOTE_PATH"/"${PGDATABASE}"_"$(date +'%d_%m_%Y__%H_%M_%S')".sqlc.dump
   return "${PIPESTATUS[0]}"
 }
 
@@ -61,11 +61,11 @@ main(){
   postgresDump
   checkSucceed "mysqldump failed"
 
-  removeOldBackup
-  checkSucceed "removing old backups failed"
-
   copyToS3
   checkSucceed "copying to the s3 bucket failed"
+
+  removeOldBackup
+  checkSucceed "removing old backups failed"
 
   clearTmpFolder
   checkSucceed "cleaning temporary folder failed"

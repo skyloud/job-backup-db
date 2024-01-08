@@ -41,10 +41,20 @@ spec:
               value: user
             - name: BAGCLI_DATABASE_PORT
               value: "5432"
-            - name: BAGCLI_BUCKET_PATH
+            - name: BAGCLI_REMOTE_PATH
               value: bucket/databases/postgres/data
             - name: BAGCLI_HEARTBEAT_URL
               value: X
+            volumeMounts:
+            - mountPath: /home/job/.config/rclone
+              name: rclone
             imagePullPolicy: Always
             name: database-backup
           tolerations: []
+          volumes:
+          - name: rclone
+            secret:
+              secretName: rclone-config
+              items:
+              - key: rclone.conf
+                path: rclone.conf
