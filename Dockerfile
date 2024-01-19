@@ -13,7 +13,7 @@ ENV BAGCLI_WEBHOOK_CHANNEL=""
 
 WORKDIR /backup-cli
 
-RUN apk add --no-cache --update rclone postgresql-client mariadb-client mongodb-tools bash curl
+RUN apk add --no-cache --update rclone postgresql-client mariadb-client mariadb-connector-c mongodb-tools bash curl
 
 RUN addgroup -S job \
     && adduser --uid 1010 -G job --home /home/job -S --shell /bin/bash job
