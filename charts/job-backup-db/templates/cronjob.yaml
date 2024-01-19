@@ -72,12 +72,12 @@ spec:
             - name: BAGCLI_DATABASE_HOST
               value: {{ .Values.backup.database.host }}
             - name: BAGCLI_DATABASE_USER
-              value: {{ .Values.backup.database.user }}
+              value: {{ .Values.backup.database.username }}
             - name: BAGCLI_DATABASE_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.backup.database.passwordSecret.name }}
-                  key: {{ .Values.backup.database.passwordSecret.key }}
+                  name: {{ .Values.backup.database.password.secret.name }}
+                  key: {{ .Values.backup.database.password.secret.key }}
             - name: BAGCLI_DATABASE_PORT
               value: "{{ .Values.backup.database.port }}"
             {{- end }}
@@ -104,7 +104,6 @@ spec:
             {{- if .Values.ephemeralVolume.enabled }}
             - mountPath: {{ .Values.ephemeralVolume.mountPath }}
               name: {{ .Values.ephemeralVolume.name }}
-              
             {{- end }}
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
@@ -124,9 +123,9 @@ spec:
           volumes:
           - name: rclone
             secret:
-              secretName: {{ .Values.backup.rclone.secretName }}
+              secretName: {{ .Values.backup.rclone.secret.name }}
               items:
-              - key: {{ .Values.backup.rclone.secretKey }}
+              - key: {{ .Values.backup.rclone.secret.key }}
                 path: rclone.conf
           {{- if .Values.ephemeralVolume.enabled }}
           - name: {{ .Values.ephemeralVolume.name }}

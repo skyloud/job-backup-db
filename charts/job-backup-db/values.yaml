@@ -31,12 +31,13 @@ backup:
     host: postgres
     # Database port
     port: "5432"
-    # Database user
-    user: user
+    # Database username
+    username: user
     # Database password
-    passwordSecret:
-      name: job-backup-db-secret
-      key: password
+    password:
+      secret:
+        name: job-backup-db-secret
+        key: password
     # URI Secret mode
     uriSecret:
       enabled: false
@@ -44,8 +45,9 @@ backup:
       key: uri
   # Rclone configuration
   rclone:
-    secretName: rclone-config
-    secretKey: rclone.conf
+    secret:
+      name: rclone-config
+      key: rclone.conf
     
 imagePullSecrets: []
 nameOverride: ""
