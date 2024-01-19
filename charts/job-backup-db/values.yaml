@@ -1,0 +1,107 @@
+# Default values for job-backup-db.
+cron:
+  schedule: "0 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  suspend: false
+  concurrencyPolicy: Forbid
+  backoffLimit: 1
+restartPolicy: Never
+image:
+  repository: skyloud/job-backup-db
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+backup:
+  retentionTime: 7d
+  # Remote path to store the backup
+  remotePath: bucket/databases/postgres/data
+  # Heartbeat URL to call after backup
+  heartbeatUrl: ""
+  # Webhook URL to call after backup
+  webhookUrl: ""
+  # Database to backup
+  database:
+    # Database type: postgres, mysql, mongodb
+    kind: postgres
+    # Database name (empty for all databases)
+    name: ""
+    # Database host
+    host: postgres
+    # Database port
+    port: "5432"
+    # Database user
+    user: user
+    # Database password
+    passwordSecret:
+      name: job-backup-db-secret
+      key: password
+    # URI Secret mode
+    uriSecret:
+      enabled: false
+      name: job-backup-db-secret
+      key: uri
+  # Rclone configuration
+  rclone:
+    secretName: rclone-config
+    secretKey: rclone.conf
+    
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+# Ephemeral volume is used as a temporary storage for the backup to be uploaded.
+ephemeralVolume:
+  enabled: true
+  name: ephemeral
+  mountPath: /tmp
+  size: 1Gi
+  storageClass: ""
+  accessModes: [ReadWriteOnce]
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+serviceAccountName: ""
