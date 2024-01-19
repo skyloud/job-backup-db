@@ -1,0 +1,145 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "job-backup-db.fullname" . }}
+  labels:
+    {{- include "job-backup-db.labels" . | nindent 4 }}
+spec:
+  concurrencyPolicy: {{ .Values.cron.concurrencyPolicy }}
+  schedule: "{{ .Values.cron.schedule }}"
+  successfulJobsHistoryLimit: {{ .Values.cron.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cron.failedJobsHistoryLimit }}
+  suspend: {{ .Values.cron.suspend }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.cron.backoffLimit }}
+      template:
+        metadata:
+          labels:
+            {{- include "job-backup-db.labels" . | nindent 12 }}
+            {{- with .Values.podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          restartPolicy: {{ .Values.restartPolicy }}
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.serviceAccountName }}
+          serviceAccountName: {{ . }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          containers:
+          - name: {{ .Chart.Name }}
+            securityContext:
+              {{- toYaml .Values.securityContext | nindent 14 }}
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            args:
+              {{- if and (eq .Values.backup.database.kind "postgres") .Values.backup.database.name }}
+              - postgres
+              - {{ .Values.backup.database.name }}
+              {{- else if (eq .Values.backup.database.kind "postgres") }}
+              - postgres
+              {{- else if and (eq .Values.backup.database.kind "mysql") .Values.backup.database.name }}
+              - mariadb
+              - {{ .Values.backup.database.name }}
+              {{- else if and (eq .Values.backup.database.kind "mariadb") .Values.backup.database.name }}
+              - mariadb
+              - {{ .Values.backup.database.name }}
+              {{- else if and (eq .Values.backup.database.kind "mongodb") .Values.backup.database.name }}
+              - mongodb
+              - {{ .Values.backup.database.name }}
+              {{- else -}}
+              {{- fail "Unsupported database kind" -}}
+              {{- end }}
+            {{- with .Values.envFrom }}
+            envFrom:
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            env:
+            - name: BAGCLI_RETENTION_TIME
+              value: "{{ .Values.backup.retentionTime }}"
+            {{- if and .Values.backup.database.uriSecret .Values.backup.database.uriSecret.enabled -}}
+            - name: BAGCLI_DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backup.database.uriSecret.name }}
+                  key: {{ .Values.backup.database.uriSecret.key }}
+            {{- else }}
+            - name: BAGCLI_DATABASE_HOST
+              value: {{ .Values.backup.database.host }}
+            - name: BAGCLI_DATABASE_USER
+              value: {{ .Values.backup.database.user }}
+            - name: BAGCLI_DATABASE_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backup.database.passwordSecret.name }}
+                  key: {{ .Values.backup.database.passwordSecret.key }}
+            - name: BAGCLI_DATABASE_PORT
+              value: "{{ .Values.backup.database.port }}"
+            {{- end }}
+            - name: BAGCLI_REMOTE_PATH
+              value: {{ .Values.backup.remotePath }}
+            {{- if .Values.backup.webhookUrl }}
+            - name: BAGCLI_WEBHOOK_URL
+              value: {{ .Values.backup.webhookUrl }}
+            {{- end }}
+            {{- if .Values.backup.heartbeatUrl }}
+            - name: BAGCLI_HEARTBEAT_URL
+              value: {{ .Values.backup.heartbeatUrl }}
+            {{- end }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end -}}
+            {{- with .Values.resources -}}
+            resources:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            volumeMounts:
+            - mountPath: /home/job/.config/rclone
+              name: rclone
+            {{- if .Values.ephemeralVolume.enabled }}
+            - mountPath: {{ .Values.ephemeralVolume.mountPath }}
+              name: {{ .Values.ephemeralVolume.name }}
+            {{- end }}
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumes:
+          - name: rclone
+            secret:
+              secretName: {{ .Values.backup.rclone.secretName }}
+              items:
+              - key: {{ .Values.backup.rclone.secretKey }}
+                path: rclone.conf
+          {{- if .Values.ephemeralVolume.enabled }}
+          - name: {{ .Values.ephemeralVolume.name }}
+            ephemeral:
+              volumeClaimTemplate:
+                spec:
+                  accessModes: {{ .Values.ephemeralVolume.accessModes }}
+                  {{- if .Values.ephemeralVolume.storageClass }}
+                  storageClassName: {{ .Values.ephemeralVolume.storageClass }}
+                  {{- end }}
+                  resources:
+                    requests:
+                      storage: {{ .Values.ephemeralVolume.size }}
+          {{- end }}
+          {{- with .Values.volumes }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
