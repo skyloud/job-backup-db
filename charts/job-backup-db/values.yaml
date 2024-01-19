@@ -1,6 +1,6 @@
 # Default values for job-backup-db.
 cron:
-  schedule: "0 * * * *"
+  schedule: "0 0 * * *"
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
   suspend: false
@@ -105,3 +105,6 @@ tolerations: []
 affinity: {}
 
 serviceAccountName: ""
+
+env: []
+envFrom: []

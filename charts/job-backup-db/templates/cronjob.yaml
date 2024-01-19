@@ -44,24 +44,24 @@ spec:
               {{- else if (eq .Values.backup.database.kind "postgres") }}
               - postgres
               {{- else if and (eq .Values.backup.database.kind "mysql") .Values.backup.database.name }}
-              - mysql
-              - {{ .Values.backup.database.name }}
-              {{- end }}
-              {{- if and (eq .Values.backup.database.kind "mariadb") .Values.backup.database.name }}
               - mariadb
               - {{ .Values.backup.database.name }}
-              {{- end }}
-              {{- if and (eq .Values.backup.database.kind "mongodb") .Values.backup.database.name }}
+              {{- else if and (eq .Values.backup.database.kind "mariadb") .Values.backup.database.name }}
+              - mariadb
+              - {{ .Values.backup.database.name }}
+              {{- else if and (eq .Values.backup.database.kind "mongodb") .Values.backup.database.name }}
               - mongodb
               - {{ .Values.backup.database.name }}
+              {{- else -}}
+              {{- fail "Unsupported database kind" -}}
               {{- end }}
+            {{- with .Values.envFrom }}
             envFrom:
-            - secretRef:
-                name: job-backup-db-secret
-                optional: false
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
             env:
             - name: BAGCLI_RETENTION_TIME
-              value: {{ .Values.backup.retentionTime }}
+              value: "{{ .Values.backup.retentionTime }}"
             {{- if and .Values.backup.database.uriSecret .Values.backup.database.uriSecret.enabled -}}
             - name: BAGCLI_DATABASE_URI
               valueFrom:
@@ -91,8 +91,13 @@ spec:
             - name: BAGCLI_HEARTBEAT_URL
               value: {{ .Values.backup.heartbeatUrl }}
             {{- end }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end -}}
+            {{- with .Values.resources -}}
             resources:
-              {{- toYaml .Values.resources | nindent 12 }}
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
             volumeMounts:
             - mountPath: /home/job/.config/rclone
               name: rclone
@@ -128,7 +133,9 @@ spec:
               volumeClaimTemplate:
                 spec:
                   accessModes: {{ .Values.ephemeralVolume.accessModes }}
+                  {{- if .Values.ephemeralVolume.storageClass }}
                   storageClassName: {{ .Values.ephemeralVolume.storageClass }}
+                  {{- end }}
                   resources:
                     requests:
                       storage: {{ .Values.ephemeralVolume.size }}
