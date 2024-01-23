@@ -43,7 +43,6 @@ mysqlDump() {
     --skip-comments \
     --skip-disable-keys \
     --skip-set-charset \
-    --set-gtid-purged=OFF \
     --no-tablespaces \
     "$MARIADB_DATABASE" | gzip -9 -c > /tmp/backup.sql.gz
   return "${PIPESTATUS[0]}"
