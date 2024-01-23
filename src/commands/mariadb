@@ -28,12 +28,23 @@ env | grep "BAGCLI_*" | grep -v "PASS"
 mysqlDump() {
   cli_log "Executing mysqldump"
   mysqldump \
+    --protocol=TCP \
+    --max-allowed-packet=1GB \
     --default-character-set=utf8mb4 \
     --host "$MARIADB_HOST" \
     --user "$MARIADB_USER" \
     --port "$MARIADB_TCP_PORT" \
     -p"$MARIADB_PWD" \
+    --quick \
     --single-transaction \
+    --skip-lock-tables \
+    --add-drop-table \
+    --skip-add-locks \
+    --skip-comments \
+    --skip-disable-keys \
+    --skip-set-charset \
+    --set-gtid-purged=OFF \
+    --no-tablespaces \
     "$MARIADB_DATABASE" | gzip -9 -c > /tmp/backup.sql.gz
   return "${PIPESTATUS[0]}"
 }
