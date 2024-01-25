@@ -1,0 +1,10 @@
+backup:
+  # Database to backup
+  database:
+    # Database type: postgres, mysql, mongodb
+    kind: mongodb
+    # URI Secret mode
+    uriSecret:
+      enabled: true
+      name: mongodb-secret
+      key: adminUri
