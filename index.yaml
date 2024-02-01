@@ -3,6 +3,16 @@ entries:
   job-backup-db:
   - apiVersion: v2
     appVersion: 0.2.4
+    created: "2024-02-01T08:20:03.171217153Z"
+    description: Job to backup databases
+    digest: 9086366b231c467cd4d2df17bc5e5091b0a09e212d540cbfeb229e0b271e1641
+    name: job-backup-db
+    type: application
+    urls:
+    - https://github.com/skyloud/job-backup-db/releases/download/job-backup-db-0.2.5/job-backup-db-0.2.5.tgz
+    version: 0.2.5
+  - apiVersion: v2
+    appVersion: 0.2.4
     created: "2024-01-25T10:32:17.957672016Z"
     description: Job to backup databases
     digest: db376d5e0c27e5721c792a00758ccb48c49b2180920a363c52cbe6b813689854
@@ -41,4 +51,4 @@ entries:
     urls:
     - https://github.com/skyloud/job-backup-db/releases/download/job-backup-db-0.2.0/job-backup-db-0.2.0.tgz
     version: 0.2.0
-generated: "2024-01-25T10:32:17.957693015Z"
+generated: "2024-02-01T08:20:03.171237952Z"
