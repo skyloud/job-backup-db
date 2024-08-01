@@ -1,0 +1,99 @@
+{{ if .Values.regularMoves.weekly.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "job-backup-db.fullname" . }}-wmv
+  labels:
+    {{- include "job-backup-db.labels" . | nindent 4 }}
+spec:
+  concurrencyPolicy: {{ .Values.cron.concurrencyPolicy }}
+  schedule: "{{ .Values.regularMoves.weekly.schedule }}"
+  successfulJobsHistoryLimit: {{ .Values.cron.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cron.failedJobsHistoryLimit }}
+  suspend: {{ .Values.cron.suspend }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.cron.backoffLimit }}
+      template:
+        metadata:
+          labels:
+            {{- include "job-backup-db.labels" . | nindent 12 }}
+            {{- with .Values.podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          restartPolicy: {{ .Values.restartPolicy }}
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.serviceAccountName }}
+          serviceAccountName: {{ . }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          containers:
+          - name: {{ .Chart.Name }}
+            securityContext:
+              {{- toYaml .Values.securityContext | nindent 14 }}
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            args:
+              - mv
+              - {{ .Values.backup.remotePath }}
+              - {{ include "job-backup-db.weeklyPath" . }}
+            {{- with .Values.envFrom }}
+            envFrom:
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            env:
+            - name: BAGCLI_RETENTION_TIME
+              value: "{{ .Values.regularMoves.weekly.retentionTime }}"
+            {{- if .Values.regularMoves.weekly.webhookUrl }}
+            - name: BAGCLI_WEBHOOK_URL
+              value: {{ .Values.regularMoves.weekly.webhookUrl }}
+            {{- end }}
+            {{- if .Values.regularMoves.weekly.heartbeatUrl }}
+            - name: BAGCLI_HEARTBEAT_URL
+              value: {{ .Values.regularMoves.weekly.heartbeatUrl }}
+            {{- end }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end -}}
+            {{- with .Values.resources -}}
+            resources:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            volumeMounts:
+            - mountPath: /home/job/.config/rclone
+              name: rclone
+            {{- if .Values.ephemeralVolume.enabled }}
+            - mountPath: {{ .Values.ephemeralVolume.mountPath }}
+              name: {{ .Values.ephemeralVolume.name }}
+            {{- end }}
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumes:
+          - name: rclone
+            secret:
+              secretName: {{ .Values.backup.rclone.secret.name }}
+              items:
+              - key: {{ .Values.backup.rclone.secret.key }}
+                path: rclone.conf
+          {{- with .Values.volumes }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+{{- end -}}

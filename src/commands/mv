@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+set -e
+set +o pipefail
+. "$BAGCLI_WORKDIR/common"
+
+cli_help_deploy() {
+  echo "
+Command: mv
+Desc: Oldest dump from olddir is moved to newdir.
+Usage:
+  mv olddir newdir"
+  exit 1
+}
+
+[ -z "$1" ] && cli_help_deploy
+[ -z "$2" ] && cli_help_deploy
+
+export SOURCE_REMOTE_PATH="$1"
+export TARGET_REMOTE_PATH="$2"
+
+cli_log "Moving oldest dump from $SOURCE_REMOTE_PATH to $TARGET_REMOTE_PATH BEGIN"
+
+removeOldBackup() {
+  cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
+  rclone_delete --min-age "$BAGCLI_RETENTION_TIME" backup:"$TARGET_REMOTE_PATH"/ || true
+}
+
+checkOldestDump() {
+  cli_log "Looking for oldest dump in $SOURCE_REMOTE_PATH"
+  local oldest_file=$(rclone_cmd lsl "$SOURCE_REMOTE_PATH" | sort -k2 | head -n 1 | awk '{print $4}')
+  echo "$oldest_file"
+}
+
+moveOnS3() {
+  local file_name="$1"
+  cli_log "Moving dump"
+  rclone_cp backup:"$SOURCE_REMOTE_PATH"/$file_name backup:"$BAGCLI_REMOTE_PATH"/$file_name
+  return "${PIPESTATUS[0]}"
+}
+
+checkSucceed() {
+  if [ $? -gt 0 ]; then
+    cli_log "[KO] $?"
+    exit "$1"
+  fi
+}
+
+main(){
+  removeOldBackup
+  checkSucceed "removing old backups failed"
+
+  oldest_file=$(checkOldestDump)
+
+  moveOnS3 "$oldest_file"
+  checkSucceed "Moving backup on the s3 bucket failed"
+
+  heartbeatPing
+  cli_log "job succeed"
+
+  postToWebhook
+  cli_log "post to WebHook succeed"
+}
+
+main

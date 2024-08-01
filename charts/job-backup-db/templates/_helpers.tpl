@@ -60,3 +60,22 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Define path replacement helpers
+*/}}
+{{- define "job-backup-db.weeklyPath" -}}
+{{- $original := .Values.backup.remotePath -}}
+{{- $replaced := replace "/daily/" "/weekly/" $original -}}
+{{- $replaced -}}
+{{- end -}}
+{{- define "job-backup-db.monthlyPath" -}}
+{{- $original := .Values.backup.remotePath -}}
+{{- $replaced := replace "/daily/" "/monthly/" $original -}}
+{{- $replaced -}}
+{{- end -}}
+{{- define "job-backup-db.yearlyPath" -}}
+{{- $original := .Values.backup.remotePath -}}
+{{- $replaced := replace "/daily/" "/yearly/" $original -}}
+{{- $replaced -}}
+{{- end -}}
