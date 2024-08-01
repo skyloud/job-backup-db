@@ -15,6 +15,7 @@ Commands:
   mariadb   Mariadb dump
   mongodb MongoDB dump
   postgres_dumpall Posgres dumpall
+  mv        Move a dump elsewhere
   *         Help
 "
   exit 1
@@ -35,6 +36,9 @@ case "$1" in
     ;;
   mongodb|mongo)
     "$BAGCLI_WORKDIR/commands/mongodb"
+    ;;
+  mv)
+    "$BAGCLI_WORKDIR/commands/mv" "$2" "$3"
     ;;
   *)
     cli_help
