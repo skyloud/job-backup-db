@@ -54,7 +54,7 @@ backup:
 regularMoves:
   weekly:
     enabled: false
-    schedule: "0 3 * * 0"
+    schedule: "0 2 * * 0"
     retentionTime: "23d"
     heartbeatUrl: ""
     webhookUrl: ""
