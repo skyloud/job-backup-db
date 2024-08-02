@@ -23,7 +23,7 @@ cli_log "Moving oldest dump from $SOURCE_REMOTE_PATH to $TARGET_REMOTE_PATH BEGI
 
 removeOldBackup() {
   cli_log "Removing backups older than $BAGCLI_RETENTION_TIME"
-  rclone_delete --min-age "$BAGCLI_RETENTION_TIME" backup:"$TARGET_REMOTE_PATH"/ || true
+  rclone_delete --min-age "$BAGCLI_RETENTION_TIME" "backup:$TARGET_REMOTE_PATH/" || true
 }
 
 checkOldestDump() {
@@ -34,7 +34,7 @@ checkOldestDump() {
 moveOnS3() {
   local file_name="$1"
   cli_log "Moving dump"
-  rclone_cp backup:"$SOURCE_REMOTE_PATH"/$file_name backup:"$BAGCLI_REMOTE_PATH"/$file_name
+  rclone_cp "backup:$SOURCE_REMOTE_PATH/$file_name" "backup:$TARGET_REMOTE_PATH/$file_name"
   return "${PIPESTATUS[0]}"
 }
 
