@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{- .Release.Name | trunc 59 | trimSuffix "-" }}-wmv
+  name: {{- .Release.Name }}-wmv
   labels:
     {{- include "job-backup-db.labels" . | nindent 4 }}
 spec:
