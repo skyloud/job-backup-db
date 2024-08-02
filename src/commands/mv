@@ -27,8 +27,7 @@ removeOldBackup() {
 }
 
 checkOldestDump() {
-  cli_log "Looking for oldest dump in $SOURCE_REMOTE_PATH"
-  local oldest_file=$(rclone_cmd lsl "$SOURCE_REMOTE_PATH" | sort -k2 | head -n 1 | awk '{print $4}')
+  local oldest_file=$(rclone_cmd lsl "backup:$SOURCE_REMOTE_PATH" | sort -k2 | head -n 1 | awk '{print $4}')
   echo "$oldest_file"
 }
 
@@ -47,13 +46,15 @@ checkSucceed() {
 }
 
 main(){
-  removeOldBackup
-  checkSucceed "removing old backups failed"
-
+  cli_log "Looking for oldest dump in $SOURCE_REMOTE_PATH"
   oldest_file=$(checkOldestDump)
+  cli_log "Oldest file is $oldest_file"
 
   moveOnS3 "$oldest_file"
   checkSucceed "Moving backup on the s3 bucket failed"
+
+  removeOldBackup
+  checkSucceed "removing old backups failed"
 
   heartbeatPing
   cli_log "job succeed"
