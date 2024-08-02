@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{- .Release.Name }}-mmv
+  name: {{ .Release.Name }}-mmv
   labels:
     {{- include "job-backup-db.labels" . | nindent 4 }}
 spec:
